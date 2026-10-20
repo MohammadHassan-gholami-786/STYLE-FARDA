@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom";
+
 export default function About() {
   return (
     <main className="min-h-screen bg-[#F8F3E9] px-4 py-14 sm:px-6">
@@ -92,14 +94,6 @@ export default function About() {
           </div>
         </section>
 
-        <div className="mt-10 text-center">
-          <a
-            href="/services"
-            className="inline-flex rounded-xl bg-[#D6B779] px-7 py-3 font-bold text-[#081426] transition hover:bg-[#E8C77E]"
-          >
-            Explore Our Services →
-          </a>
-        </div>
       </div>
     </main>
   );
