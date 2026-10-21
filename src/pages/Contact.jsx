@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const contactLinks = [
   {
@@ -150,12 +150,12 @@ export default function Contact() {
           <p className="text-sm text-[#6D6254]">
             Thank you for choosing STYLE FARDA.
           </p>
-          <Link
+          <NavLink
             to="/services"
             className="mt-4 inline-flex rounded-xl bg-[#17243A] px-6 py-3 font-bold text-white transition hover:bg-[#263B5A]"
           >
             Explore Our Services →
-          </Link>
+          </NavLink>
         </div>
       </div>
     </main>

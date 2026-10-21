@@ -16,5 +16,137 @@
       "id": "AKnrnlY_Qrw"
     }
   ],
+  "services": [
+    {
+      "id": "1",
+      "title": "Formal Manto",
+      "price": 1000,
+      "workdays": 6,
+      "category": "Dresses",
+      "accepted": false,
+      "image": "woman1.png",
+      "description": ""
+    },
+    {
+      "id": "2",
+      "title": "Simple Manto",
+      "price": 799,
+      "workdays": 4,
+      "category": "Dresses",
+      "accepted": true,
+      "image": "woman2.png",
+      "description": ""
+    },
+    {
+      "id": "3",
+      "title": "Girle Dress",
+      "price": 1000,
+      "workdays": 5,
+      "category": "Dresses",
+      "accepted": true,
+      "image": "woman3.png"
+    },
+    {
+      "id": "4",
+      "title": "White Dress",
+      "price": 700,
+      "workdays": 5,
+      "category": "Dresses",
+      "accepted": false,
+      "image": "woman4.png"
+    },
+    {
+      "id": "5",
+      "title": "Black Uniform",
+      "price": 650,
+      "workdays": 4,
+      "category": "Masculine",
+      "accepted": true,
+      "image": "black_suit.jpg"
+    },
+    {
+      "id": "6",
+      "title": "Uniform Tailoring",
+      "price": 850,
+      "workdays": 5,
+      "category": "Masculine",
+      "accepted": true,
+      "image": "white_suit.jpg"
+    },
+    {
+      "id": "7",
+      "title": "Blue T-shirt",
+      "price": 500,
+      "workdays": 3,
+      "category": "Masculine",
+      "accepted": true,
+      "image": "blue_t-shirt.png"
+    },
+    {
+      "id": "8",
+      "title": "White T-shirt",
+      "price": 500,
+      "workdays": 1,
+      "category": "Masculine",
+      "accepted": false,
+      "image": "white_t-shirt.jpg"
+    },
+    {
+      "id": "9",
+      "title": "White Hoodie",
+      "price": 500,
+      "workdays": 1,
+      "category": "Masculine",
+      "accepted": true,
+      "image": "hodi1.png"
+    },
+    {
+      "id": "10",
+      "title": "Black Hoodie",
+      "price": 700,
+      "workdays": 3,
+      "category": "Masculine",
+      "accepted": false,
+      "image": "hodi3.png"
+    },
+    {
+      "id": "11",
+      "title": "Black Hoodie",
+      "price": 900,
+      "workdays": 3,
+      "category": "Masculine",
+      "accepted": false,
+      "image": "1.png"
+    },
+    {
+      "id": "12",
+      "title": "Elegant Manteau",
+      "price": 1800,
+      "workdays": 5,
+      "category": "Dresses",
+      "accepted": false,
+      "image": "2.png"
+    },
+    {
+      "id": "13",
+      "title": "Men's Jacket",
+      "price": 2200,
+      "workdays": 4,
+      "category": "Masculine",
+      "accepted": false,
+      "image": "3.png"
+    },
+    {
+      "id": "14",
+      "title": "Clothing Repairs",
+      "price": 150,
+      "workdays": 1,
+      "category": "Repairs",
+      "accepted": false,
+      "image": "work.png"
+    }
+  ],
+  "orders": [],
+  "customers": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

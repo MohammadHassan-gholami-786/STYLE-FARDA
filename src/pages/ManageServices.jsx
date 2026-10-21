@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 
+const API_URL = "http://localhost:3001/services";
+
 const emptyForm = {
   title: "",
   description: "",
@@ -11,9 +13,17 @@ const emptyForm = {
   accepted: true,
 };
 
+function getImagePath(image) {
+  if (!image) return "";
+  if (/^(https?:\/\/|data:|blob:)/i.test(image)) return image;
+  return image.startsWith("/") ? image : `/${image}`;
+}
+
 export default function ManageServices({ services, setServices }) {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -24,15 +34,16 @@ export default function ManageServices({ services, setServices }) {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     if (
       !form.title.trim() ||
       Number(form.price) <= 0 ||
       Number(form.workdays) <= 0
     ) {
-      alert("Enter a name, a valid price, and workdays.");
+      setError("Enter a name, a valid price, and workdays.");
       return;
     }
 
@@ -45,31 +56,55 @@ export default function ManageServices({ services, setServices }) {
       image: form.image.trim(),
     };
 
-    if (editingId !== null) {
-      setServices((previous) =>
-        previous.map((service) =>
-          service.id === editingId
-            ? { ...service, ...serviceData }
-            : service
-        )
-      );
-    } else {
-      setServices((previous) => [
-        ...previous,
-        {
-          ...serviceData,
-          id:
-            Math.max(0, ...services.map((service) => service.id)) + 1,
-        },
-      ]);
-    }
+    setSaving(true);
 
-    setForm(emptyForm);
-    setEditingId(null);
+    try {
+      const response = await fetch(
+        editingId !== null
+          ? `${API_URL}/${editingId}`
+          : API_URL,
+        {
+          method: editingId !== null ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(serviceData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not save the service.");
+      }
+
+      const savedService = await response.json();
+
+      if (editingId !== null) {
+        setServices((previous) =>
+          previous.map((service) =>
+            String(service.id) === String(editingId)
+              ? savedService
+              : service
+          )
+        );
+      } else {
+        setServices((previous) => [...previous, savedService]);
+      }
+
+      setForm(emptyForm);
+      setEditingId(null);
+    } catch {
+      setError(
+        "Could not save the service. Make sure the backend is running."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleEdit(service) {
     setEditingId(service.id);
+    setError("");
+
     setForm({
       title: service.title,
       description: service.description || "",
@@ -83,32 +118,80 @@ export default function ManageServices({ services, setServices }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!window.confirm("Delete this service?")) return;
 
-    setServices((previous) =>
-      previous.filter((service) => service.id !== id)
-    );
+    setError("");
 
-    if (editingId === id) {
-      setEditingId(null);
-      setForm(emptyForm);
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not delete the service.");
+      }
+
+      setServices((previous) =>
+        previous.filter((service) => String(service.id) !== String(id))
+      );
+
+      if (String(editingId) === String(id)) {
+        setEditingId(null);
+        setForm(emptyForm);
+      }
+    } catch {
+      setError(
+        "Could not delete the service. Make sure the backend is running."
+      );
     }
   }
 
-  function toggleAccepted(id) {
-    setServices((previous) =>
-      previous.map((service) =>
-        service.id === id
-          ? { ...service, accepted: !service.accepted }
-          : service
-      )
-    );
+  async function toggleAccepted(service) {
+    setError("");
+
+    try {
+      const response = await fetch(`${API_URL}/${service.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accepted: !service.accepted,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not update the service.");
+      }
+
+      const updatedService = await response.json();
+
+      setServices((previous) =>
+        previous.map((item) =>
+          String(item.id) === String(service.id)
+            ? updatedService
+            : item
+        )
+      );
+
+      if (String(editingId) === String(service.id)) {
+        setForm((previous) => ({
+          ...previous,
+          accepted: updatedService.accepted,
+        }));
+      }
+    } catch {
+      setError(
+        "Could not update the service. Make sure the backend is running."
+      );
+    }
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setError("");
   }
 
   return (
@@ -117,9 +200,11 @@ export default function ManageServices({ services, setServices }) {
         <p className="font-semibold uppercase tracking-[0.3em] text-[#A17A32]">
           STYLE FARDA
         </p>
+
         <h1 className="mt-3 text-4xl font-black text-[#17243A] sm:text-5xl">
           Manage Services
         </h1>
+
         <p className="mt-4 text-[#6D6254]">
           Add, edit, and manage your tailoring services.
         </p>
@@ -156,7 +241,6 @@ export default function ManageServices({ services, setServices }) {
             >
               <option value="Dresses">Dresses</option>
               <option value="Masculine">Masculine</option>
-              <option value="Uniforms">Uniforms</option>
               <option value="Repairs">Repairs</option>
             </select>
           </label>
@@ -218,10 +302,11 @@ export default function ManageServices({ services, setServices }) {
 
           <div className="sm:col-span-2">
             <p className="mb-2 text-sm font-semibold">Image Preview</p>
+
             <div className="flex h-48 w-40 items-center justify-center overflow-hidden rounded-xl border border-[#D6B779] bg-[#F8F3E9]">
               {form.image.trim() ? (
                 <img
-                  src={form.image.trim()}
+                  src={getImagePath(form.image.trim())}
                   alt="Clothing preview"
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
@@ -234,6 +319,7 @@ export default function ManageServices({ services, setServices }) {
                   className="h-full w-full object-cover"
                 />
               ) : null}
+
               <span
                 className="h-full w-full items-center justify-center text-sm text-[#6D6254]"
                 style={{ display: form.image.trim() ? "none" : "flex" }}
@@ -259,12 +345,23 @@ export default function ManageServices({ services, setServices }) {
           </label>
         </div>
 
+        {error && (
+          <p role="alert" className="mt-5 text-sm font-semibold text-red-600">
+            {error}
+          </p>
+        )}
+
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             type="submit"
-            className="rounded-xl bg-[#17243A] px-6 py-3 font-bold text-white hover:bg-[#263B5A]"
+            disabled={saving}
+            className="rounded-xl bg-[#17243A] px-6 py-3 font-bold text-white hover:bg-[#263B5A] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {editingId !== null ? "Save Changes" : "Add Service"}
+            {saving
+              ? "Saving..."
+              : editingId !== null
+                ? "Save Changes"
+                : "Add Service"}
           </button>
 
           {editingId !== null && (
@@ -295,18 +392,23 @@ export default function ManageServices({ services, setServices }) {
                   <p className="text-xs font-bold uppercase tracking-wider text-[#A17A32]">
                     {service.category}
                   </p>
+
                   <h3 className="mt-2 break-words text-xl font-black text-[#17243A]">
                     {service.title}
                   </h3>
+
                   <p className="mt-2 text-sm text-[#6D6254]">
                     {service.description}
                   </p>
+
                   <p className="mt-3 font-bold text-[#17243A]">
                     {service.price} AFN
                   </p>
+
                   <p className="text-sm text-[#6D6254]">
                     Ready in {service.workdays} days
                   </p>
+
                   <p
                     className={`mt-2 text-sm font-semibold ${
                       service.accepted ? "text-green-700" : "text-red-600"
@@ -326,13 +428,15 @@ export default function ManageServices({ services, setServices }) {
                   >
                     Edit
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => toggleAccepted(service.id)}
+                    onClick={() => toggleAccepted(service)}
                     className="rounded-lg border border-[#D6B779] px-3 py-2 text-sm font-semibold text-[#17243A] hover:bg-[#F8F3E9]"
                   >
                     {service.accepted ? "Turn Off" : "Turn On"}
                   </button>
+
                   <button
                     type="button"
                     onClick={() => handleDelete(service.id)}
@@ -346,7 +450,7 @@ export default function ManageServices({ services, setServices }) {
               <div className="flex w-[40%] items-center justify-center bg-[#F8F3E9]">
                 {service.image ? (
                   <img
-                    src={service.image}
+                    src={getImagePath(service.image)}
                     alt={service.title}
                     onError={(event) => {
                       event.currentTarget.style.display = "none";
@@ -359,6 +463,7 @@ export default function ManageServices({ services, setServices }) {
                     className="h-full min-h-56 w-full object-cover"
                   />
                 ) : null}
+
                 <span
                   className="min-h-56 w-full items-center justify-center text-sm text-[#6D6254]"
                   style={{ display: service.image ? "none" : "flex" }}
