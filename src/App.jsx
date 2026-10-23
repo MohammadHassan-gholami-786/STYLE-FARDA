@@ -53,14 +53,15 @@ export default function App() {
     return <p className="p-10 text-center">Loading services...</p>;
   }
 
-  if (error) {
-    return <p className="p-10 text-center text-red-600">{error}</p>;
-  }
-
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-[#F8F3E9] text-[#17243A]">
         <Navbar />
+        {error && (
+          <p className="mx-auto max-w-7xl px-4 py-3 text-center text-red-600">
+            {error} Services may be unavailable until the backend is working.
+          </p>
+        )}
 
         <Routes>
           <Route path="/" element={<Home />} />

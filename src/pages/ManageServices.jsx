@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 
+const API_URL = "/api/services";
+
 const emptyForm = {
   title: "",
   description: "",
@@ -14,6 +16,8 @@ const emptyForm = {
 export default function ManageServices({ services, setServices }) {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -24,15 +28,16 @@ export default function ManageServices({ services, setServices }) {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     if (
       !form.title.trim() ||
-      Number(form.price) <= 0 ||
-      Number(form.workdays) <= 0
+      !Number.isFinite(Number(form.price)) || Number(form.price) <= 0 ||
+      !Number.isInteger(Number(form.workdays)) || Number(form.workdays) <= 0
     ) {
-      alert("Enter a name, a valid price, and workdays.");
+      setError("Enter a name, a valid price, and whole workdays greater than zero.");
       return;
     }
 
@@ -43,29 +48,36 @@ export default function ManageServices({ services, setServices }) {
       price: Number(form.price),
       workdays: Number(form.workdays),
       image: form.image.trim(),
+      accepted: Boolean(form.accepted),
     };
 
-    if (editingId !== null) {
-      setServices((previous) =>
-        previous.map((service) =>
-          service.id === editingId
-            ? { ...service, ...serviceData }
-            : service
-        )
-      );
-    } else {
-      setServices((previous) => [
-        ...previous,
+    setSaving(true);
+    try {
+      const response = await fetch(
+        editingId !== null ? `${API_URL}/${editingId}` : API_URL,
         {
-          ...serviceData,
-          id:
-            Math.max(0, ...services.map((service) => service.id)) + 1,
-        },
-      ]);
-    }
+          method: editingId !== null ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(serviceData),
+        }
+      );
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save service.");
 
-    setForm(emptyForm);
-    setEditingId(null);
+      if (editingId !== null) {
+        setServices((previous) => previous.map((service) =>
+          String(service.id) === String(editingId) ? result : service
+        ));
+      } else {
+        setServices((previous) => [...previous, result]);
+      }
+      setForm(emptyForm);
+      setEditingId(null);
+    } catch (err) {
+      setError(err.message || "Could not connect to the services API.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleEdit(service) {
@@ -84,27 +96,41 @@ export default function ManageServices({ services, setServices }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!window.confirm("Delete this service?")) return;
-
-    setServices((previous) =>
-      previous.filter((service) => service.id !== id)
-    );
-
-    if (editingId === id) {
-      setEditingId(null);
-      setForm(emptyForm);
+    setError("");
+    try {
+      const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not delete service.");
+      setServices((previous) => previous.filter((service) => String(service.id) !== String(id)));
+      if (String(editingId) === String(id)) {
+        setEditingId(null);
+        setForm(emptyForm);
+      }
+    } catch (err) {
+      setError(err.message || "Could not connect to the services API.");
     }
   }
 
-  function toggleAccepted(id) {
-    setServices((previous) =>
-      previous.map((service) =>
-        service.id === id
-          ? { ...service, accepted: !service.accepted }
-          : service
-      )
-    );
+  async function toggleAccepted(id) {
+    const service = services.find((item) => String(item.id) === String(id));
+    if (!service) return;
+    setError("");
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accepted: !service.accepted }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not update service.");
+      setServices((previous) => previous.map((item) =>
+        String(item.id) === String(id) ? result : item
+      ));
+    } catch (err) {
+      setError(err.message || "Could not connect to the services API.");
+    }
   }
 
   function cancelEdit() {
@@ -127,6 +153,10 @@ export default function ManageServices({ services, setServices }) {
           Add, edit, and manage your tailoring services.
         </p>
       </section>
+
+      {error && (
+        <p role="alert" className="mb-5 rounded-xl bg-red-50 p-4 text-red-700">{error}</p>
+      )}
 
       <form
         onSubmit={handleSubmit}
@@ -271,9 +301,10 @@ export default function ManageServices({ services, setServices }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             type="submit"
+            disabled={saving}
             className="rounded-xl bg-[#17243A] px-6 py-3 font-bold text-white hover:bg-[#263B5A]"
           >
-            {editingId !== null ? "Save Changes" : "Add Service"}
+            {saving ? "Saving..." : editingId !== null ? "Save Changes" : "Add Service"}
           </button>
 
           {editingId !== null && (

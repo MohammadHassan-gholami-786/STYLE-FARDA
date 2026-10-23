@@ -17,10 +17,19 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "PATCH") {
-      const { stage } = req.body;
-
-      if (!stages.includes(stage)) {
+      const { stage } = req.body || {};
+      const index = stages.indexOf(stage);
+      if (index < 0) {
         return res.status(400).json({ error: "Invalid order stage" });
+      }
+
+      const current = await sql`SELECT stage FROM orders WHERE id = ${id}`;
+      if (!current.length) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      const currentIndex = stages.indexOf(current[0].stage);
+      if (currentIndex < 0 || index !== currentIndex + 1) {
+        return res.status(400).json({ error: "Order must move to the next stage only" });
       }
 
       const result = await sql`

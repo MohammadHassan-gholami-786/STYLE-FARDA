@@ -68,7 +68,7 @@ if (!response.ok) {
         setOrders(data);
         setError("");
       } catch {
-        setError("Could not connect to the backend. Start the API server.");
+        setError("Could not load orders from the backend. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -180,7 +180,7 @@ if (!response.ok) {
       navigate("/orders", { replace: true });
 
     } catch {
-      setError(". Check that the API server is running.");
+      setError("");
     } finally {
       setSaving(false);
     }
@@ -225,7 +225,7 @@ if (!response.ok) {
         )
       );
     } catch {
-      setError("Could not update the order stage. Check the API server.");
+      setError("Could not update the order stage. Please try again.");
     } finally {
       setUpdatingId(null);
     }
@@ -254,7 +254,7 @@ if (!response.ok) {
         previous.filter((item) => String(item.id) !== String(id))
       );
     } catch {
-      setError("Could not delete the order. Check the API server.");
+      setError("Could not delete the order. Please try again.");
     } finally {
       setDeletingId(null);
     }

@@ -14,63 +14,37 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const {
-        id,
-        title,
-        image = "",
-        price,
-        customer,
-        phone,
-        color = "",
-        size = "",
-        quantity = 1,
-        dueDate,
-        total,
-        deposit = 0,
-        remaining,
-        stage = "Order Received",
-      } = req.body;
+      const body = req.body || {};
+      const title = typeof body.title === "string" ? body.title.trim() : "";
+      const customer = typeof body.customer === "string" ? body.customer.trim() : "";
+      const phone = typeof body.phone === "string" ? body.phone.trim() : String(body.phone || "");
+      const price = Number(body.price);
+      const quantity = Number(body.quantity);
+      const total = Number(body.total);
+      const deposit = body.deposit === undefined ? 0 : Number(body.deposit);
+      const image = typeof body.image === "string" ? body.image : "";
+      const color = typeof body.color === "string" ? body.color : "";
+      const size = typeof body.size === "string" ? body.size : "";
+      const dueDate = body.dueDate || null;
 
-      if (
-        !title ||
-        !customer ||
-        !phone ||
-        Number(price) < 0 ||
-        Number(quantity) < 1 ||
-        Number(deposit) < 0 ||
-        Number(deposit) > Number(total)
-      ) {
-        return res.status(400).json({
-          error: "Invalid order information",
-        });
+      if (!title || customer.length < 3 || !/^\d{10,}$/.test(phone) ||
+          !Number.isFinite(price) || price <= 0 || !Number.isInteger(quantity) || quantity < 1 ||
+          !Number.isFinite(total) || total !== price * quantity ||
+          !Number.isInteger(deposit) || deposit < 0 || deposit > total || !dueDate) {
+        return res.status(400).json({ error: "Invalid order information" });
       }
 
-     
-const result = await sql`
-  INSERT INTO orders (
-    title, image, price, customer, phone,
-    color, size, quantity, duedate, total,
-    deposit, remaining, stage
-  )
-  VALUES (
-    ${title},
-    ${image},
-    ${Number(price)},
-    ${customer},
-    ${phone},
-    ${color},
-    ${size},
-    ${Number(quantity)},
-    ${dueDate || null},
-    ${Number(total)},
-    ${Number(deposit)},
-    ${Number(remaining)},
-    ${stage}
-  )
-  RETURNING *, duedate AS "dueDate"
-`;
-
-
+      const remaining = total - deposit;
+      const result = await sql`
+        INSERT INTO orders (
+          title, image, price, customer, phone, color, size,
+          quantity, duedate, total, deposit, remaining, stage
+        ) VALUES (
+          ${title}, ${image}, ${price}, ${customer}, ${phone}, ${color}, ${size},
+          ${quantity}, ${dueDate}, ${total}, ${deposit}, ${remaining}, 'Order Received'
+        )
+        RETURNING *, duedate AS "dueDate"
+      `;
       return res.status(201).json(result[0]);
     }
 
@@ -88,7 +62,7 @@ const result = await sql`
     }
 
     return res.status(500).json({
-      error: "Server error",
+      error: "Could not process orders request. Check the database connection and orders table.",
     });
   }
 }

@@ -2,63 +2,37 @@ import { sql } from "../lib/db.js";
 
 export default async function handler(req, res) {
   try {
-    // ۱. متد خواندن اطلاعات (GET)
     if (req.method === "GET") {
-      const services = await sql`
-        SELECT * FROM services ORDER BY id ASC
-      `;
+      const services = await sql`SELECT * FROM services ORDER BY id ASC`;
       return res.status(200).json(services);
     }
 
-    // ۲. متد ثبت تغییرات و اطلاعات جدید (POST)
     if (req.method === "POST") {
-      const {
-        title,
-        description = "",
-        image = "",
-        price,
-        workdays = 1,
-        category = "",
-        accepted = true,
-      } = req.body;
+      const body = req.body || {};
+      const title = typeof body.title === "string" ? body.title.trim() : "";
+      const price = Number(body.price);
+      const workdays = body.workdays === undefined ? 1 : Number(body.workdays);
+      const description = typeof body.description === "string" ? body.description.trim() : "";
+      const image = typeof body.image === "string" ? body.image.trim() : "";
+      const category = typeof body.category === "string" ? body.category.trim() : "";
+      const accepted = body.accepted === undefined ? true : body.accepted;
 
-      // اعتبار سنجی اطلاعات ورودی
-      if (!title || price === undefined || Number(price) < 0) {
-        return res.status(400).json({
-          error: "Valid title and price are required",
-        });
+      if (!title || !Number.isFinite(price) || price <= 0 || !Number.isInteger(workdays) || workdays < 1 || typeof accepted !== "boolean") {
+        return res.status(400).json({ error: "Enter a title, positive price, whole workdays, and valid acceptance status." });
       }
 
-      // اجرای کوئری با ساختار صحیح await برای جلوگیری از خطای سرور در ورسل
       const result = await sql`
-        INSERT INTO services
-          (title, description, image, price, workdays, category, accepted)
-        VALUES
-          (
-            ${title},
-            ${description},
-            ${image},
-            ${Number(price)},
-            ${Number(workdays)},
-            ${category},
-            ${accepted}
-          )
+        INSERT INTO services (title, description, image, price, workdays, category, accepted)
+        VALUES (${title}, ${description}, ${image}, ${price}, ${workdays}, ${category}, ${accepted})
         RETURNING *
       `;
-
-      // در متد sql نئون، خروجی یک آرایه است؛ گرفتن ردیف اول ثبت شده به صورت ایمن:
-      const savedService = result && result.length > 0 ? result[0] : result;
-
-      return res.status(201).json(savedService);
+      return res.status(201).json(result[0]);
     }
 
-    // اگر متدی غیر از GET و POST فرستاده شد
-    res.setHeader("Allow", ["GET", "POST"]);
+    res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ error: "Method not allowed" });
-    
   } catch (error) {
-    // چاپ خطای دقیق در داشبورد ورسل برای عیب‌یابی ساده‌تر
-    console.error("Services API error detail:", error.message);
-    return res.status(500).json({ error: "Server error", details: error.message });
+    console.error("Services API error:", error);
+    return res.status(500).json({ error: "Could not process services request. Check the database connection and services table." });
   }
 }
