@@ -34,17 +34,23 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid order information" });
       }
 
-      const remaining = total - deposit;
-      const result = await sql`
-        INSERT INTO orders (
-          title, image, price, customer, phone, color, size,
-          quantity, duedate, total, deposit, remaining, stage
-        ) VALUES (
-          ${title}, ${image}, ${price}, ${customer}, ${phone}, ${color}, ${size},
-          ${quantity}, ${dueDate}, ${total}, ${deposit}, ${remaining}, 'Order Received'
-        )
-        RETURNING *, duedate AS "dueDate"
-      `;
+     
+const remaining = total - deposit;
+const id = crypto.randomUUID();
+
+const result = await sql`
+  INSERT INTO orders (
+    id, title, image, price, customer, phone, color, size,
+    quantity, duedate, total, deposit, remaining, stage
+  ) VALUES (
+    ${id}, ${title}, ${image}, ${price}, ${customer}, ${phone},
+    ${color}, ${size}, ${quantity}, ${dueDate}, ${total},
+    ${deposit}, ${remaining}, 'Order Received'
+  )
+  RETURNING *, duedate AS "dueDate"
+`;
+
+  
       return res.status(201).json(result[0]);
     }
 
