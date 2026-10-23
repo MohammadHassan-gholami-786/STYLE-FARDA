@@ -61,8 +61,24 @@ export default function ManageServices({ services, setServices }) {
           body: JSON.stringify(serviceData),
         }
       );
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Could not save service.");
+
+      const text = await response.text();
+let result = {};
+
+try {
+  result = text ? JSON.parse(text) : {};
+} catch {
+  throw new Error(`API returned invalid JSON (HTTP ${response.status}).`);
+}
+
+if (!response.ok) {
+  throw new Error(result.error || `Request failed (HTTP ${response.status}).`);
+}
+
+if (!result.id) {
+  throw new Error("The API did not return the saved service.");
+}
+      
 
       if (editingId !== null) {
         setServices((previous) => previous.map((service) =>
