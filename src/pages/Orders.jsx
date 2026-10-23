@@ -49,11 +49,20 @@ export default function Orders() {
   useEffect(() => {
     async function loadOrders() {
       try {
+
+
+
         const response = await fetch(API_URL);
 
-        if (!response.ok) {
-          throw new Error("Could not load orders.");
-        }
+if (!response.ok) {
+  const details = await response.text();
+  throw new Error(
+    `Orders API failed (${response.status}): ${details}`
+  );
+}
+
+
+ 
 
         const data = await response.json();
         setOrders(data);
@@ -171,7 +180,7 @@ export default function Orders() {
       navigate("/orders", { replace: true });
 
     } catch {
-      setError("Order could not be saved. Check that the API server is running.");
+      setError(". Check that the API server is running.");
     } finally {
       setSaving(false);
     }
