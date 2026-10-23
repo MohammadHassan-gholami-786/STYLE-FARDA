@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
       const result = await sql`
         INSERT INTO services (title, description, image, price, workdays, category, accepted)
-        VALUES (${title}, ${description}, ${image}, ${, ${workdays}, ${category}, ${accepted})
+        VALUES (${title}, ${description}, ${image}, ${price}, ${workdays}, ${category}, ${accepted})
         RETURNING *
       `;
       return res.status(201).json(result[0]);

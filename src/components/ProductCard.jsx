@@ -71,7 +71,7 @@ export default function ProductCard({
             {accepted ? (
 
               <NavLink
-                 to={`/orders?title=${encodeURIComponent(title)}&&price=${Number(price)}&category=${encodeURIComponent(category || "")}&image=${encodeURIComponent(image || "")}`}
+                to={`/orders?title=${encodeURIComponent(title)}&price=${Number(price)}&category=${encodeURIComponent(category || "")}&image=${encodeURIComponent(image || "")}`}
                   className="inline-flex items-center rounded-xl bg-[#D6B779] px-4 py-3 text-sm font-bold text-[#081426] transition hover:bg-[#E8C77E]"
               >
                   Order Now →
