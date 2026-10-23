@@ -68,7 +68,7 @@ const result = await sql`
     ${stage}
   )
   RETURNING *, duedate AS "dueDate"
-;
+`;
 
 
       return res.status(201).json(result[0]);
