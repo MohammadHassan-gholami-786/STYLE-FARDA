@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, NavLink } from "react-router-dom";
 
-const API_URL = "http://localhost:3001/orders";
+const API_URL = "/api/orders";
 
 const stages = [
   "Order Received",

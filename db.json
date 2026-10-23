@@ -151,8 +151,8 @@
       "title": "Simple Manto",
       "image": "woman2.png",
       "price": 799,
-      "customer": "yutygul",
-      "phone": "09876567890",
+      "customer": "khj",
+      "phone": "098765435467",
       "color": "Black",
       "size": "M",
       "quantity": 1,
@@ -161,7 +161,7 @@
       "deposit": 0,
       "remaining": 799,
       "stage": "Order Received",
-      "id": "MEfIpJzKOgE"
+      "id": "Fh6DJ8JZ3D4"
     }
   ],
   "customers": [],

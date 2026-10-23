@@ -30,7 +30,7 @@ export default function App() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3001/services")
+    fetch("/api/services")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Could not load services");

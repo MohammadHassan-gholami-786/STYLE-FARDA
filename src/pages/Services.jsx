@@ -92,7 +92,7 @@ export default function Services({ services }) {
         <input
           type="checkbox"
           checked={acceptedOnly}
-          onChange={(event) => setAcceptedOnly(event.target.checked)}
+          onChange={(event) => setAcceptedOnly(event.target.checked)}          
           className="h-4 w-4 accent-[#A17A32]"
         />
         Show only services accepting orders
