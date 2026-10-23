@@ -32,7 +32,6 @@ export default async function handler(req, res) {
       } = req.body;
 
       if (
-        !id ||
         !title ||
         !customer ||
         !phone ||
@@ -46,30 +45,31 @@ export default async function handler(req, res) {
         });
       }
 
-      const result = await sql`
-        INSERT INTO orders (
-          id, title, image, price, customer, phone,
-          color, size, quantity, duedate, total,
-          deposit, remaining, stage
-        )
-        VALUES (
-          ${String(id)},
-          ${title},
-          ${image},
-          ${Number(price)},
-          ${customer},
-          ${phone},
-          ${color},
-          ${size},
-          ${Number(quantity)},
-          ${dueDate || null},
-          ${Number(total)},
-          ${Number(deposit)},
-          ${Number(remaining)},
-          ${stage}
-        )
-        RETURNING *, duedate AS "dueDate"
-      `;
+     
+const result = await sql`
+  INSERT INTO orders (
+    title, image, price, customer, phone,
+    color, size, quantity, duedate, total,
+    deposit, remaining, stage
+  )
+  VALUES (
+    ${title},
+    ${image},
+    ${Number(price)},
+    ${customer},
+    ${phone},
+    ${color},
+    ${size},
+    ${Number(quantity)},
+    ${dueDate || null},
+    ${Number(total)},
+    ${Number(deposit)},
+    ${Number(remaining)},
+    ${stage}
+  )
+  RETURNING *, duedate AS "dueDate"
+;
+
 
       return res.status(201).json(result[0]);
     }
