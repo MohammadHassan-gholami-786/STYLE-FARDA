@@ -54,7 +54,7 @@ export default function ProductCard({
                   Price
                 </p>
                 <p className="mt-1 text-base font-black text-white sm:text-lg">
-                  {price} AFN
+                  {Number(price)} AFN
                 </p>
               </div>
 
@@ -71,7 +71,7 @@ export default function ProductCard({
             {accepted ? (
 
               <NavLink
-                 to={`/orders?title=${encodeURIComponent(title)}&price=${price}&category=${encodeURIComponent(category || "")}&image=${encodeURIComponent(image || "")}`}
+                 to={`/orders?title=${encodeURIComponent(title)}&&price=${Number(price)}&category=${encodeURIComponent(category || "")}&image=${encodeURIComponent(image || "")}`}
                   className="inline-flex items-center rounded-xl bg-[#D6B779] px-4 py-3 text-sm font-bold text-[#081426] transition hover:bg-[#E8C77E]"
               >
                   Order Now →

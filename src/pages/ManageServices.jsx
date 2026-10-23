@@ -361,7 +361,7 @@ if (!result.id) {
                   </p>
 
                   <p className="mt-3 font-bold text-[#17243A]">
-                    {service.price} AFN
+                    {Number(service.price)} AFN
                   </p>
 
                   <p className="text-sm text-[#6D6254]">

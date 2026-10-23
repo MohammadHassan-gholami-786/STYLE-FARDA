@@ -303,7 +303,7 @@ if (!response.ok) {
             <label className="text-sm font-semibold">
               Price per Item (AFN)
               <input
-                value={price}
+                value={Number(price)}
                 readOnly
                 className="mt-2 w-full rounded-xl border border-[#D6B779] bg-gray-100 px-4 py-3"
               />
