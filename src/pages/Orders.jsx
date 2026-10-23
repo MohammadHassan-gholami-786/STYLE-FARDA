@@ -517,9 +517,9 @@ if (!response.ok) {
                     <p>Color: {order.color} · Size: {order.size}</p>
                     <p>Quantity: {order.quantity}</p>
                     <p>Delivery Date: {order.dueDate}</p>
-                    <p>Total Price: {order.total} AFN</p>
-                    <p>Amount Paid: {order.deposit} AFN</p>
-                    <p>Remaining Balance: {order.remaining} AFN</p>
+                    <p>Total Price: {Number(order.total)} AFN</p>
+                    <p>Amount Paid: {Number(order.deposit)} AFN</p>
+                    <p>Remaining Balance: {Number(order.remaining)} AFN</p>
                   </div>
 
                   {order.stage !== "Delivered" ? (
